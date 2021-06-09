@@ -1,18 +1,46 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <FormTareas v-on:procesar-tarea="procesarTarea" :tarea="tarea"/>
+  <ListaTareas />
+
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import FormTareas from '../components/FormTareas'
+import ListaTareas from '../components/ListaTareas'
+import {mapActions} from 'vuex'
+
 
 export default {
   name: 'Home',
   components: {
-    HelloWorld
-  }
+    FormTareas,
+    ListaTareas
+  },
+
+  data() {
+    return { 
+      tarea: {
+        id: '',
+        texto: '',
+        categorias: [],
+        responsable: '',
+        tiempo: 0
+      }
+    }
+  },
+  methods: {
+    ...mapActions(['setTareas']),
+    procesarTarea(){
+      this.setTareas(this.tarea)
+      console.log(this.tarea)
+      this.tarea={
+        id:'',
+        texto: '',
+        categorias: [],
+        responsable: '',
+        tiempo: 0
+      }
+    }
+  },
 }
 </script>

@@ -24,7 +24,8 @@ export default {
         texto: '',
         categorias: [],
         responsable: '',
-        tiempo: 0
+        tiempo: 0,
+        showActions: false
       }
     }
   },
@@ -38,7 +39,8 @@ export default {
         texto: '',
         categorias: [],
         responsable: '',
-        tiempo: 0
+        tiempo: 0,
+        showActions: false
       }
     }
   },

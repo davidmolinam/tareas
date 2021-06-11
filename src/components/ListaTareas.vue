@@ -1,5 +1,5 @@
 <template>
-    {{tareas }}
+    <hr>
     <table class="table table-striped table-hover mt-5">
       <thead>
         <tr>
@@ -23,8 +23,8 @@
           <td>{{item.responsable}}</td>
           <td>{{item.tiempo}}</td>
           <td>
-              <button class="btn btn-danger btn-sm" @click="borrar(item.id)">Eliminar</button>
-              <router-link 
+              <button v-if="item.showActions" class="btn btn-danger btn-sm" @click="borrar(item.id)">Eliminar</button>
+              <router-link v-if="item.showActions"
                 class="btn btn-warning ml-5 btn-sm" 
                 :to="{
                     name: 'Editar',

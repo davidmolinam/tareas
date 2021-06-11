@@ -1,14 +1,17 @@
 <template>
     <h1 class="my-5">{{nombreCabecera}}</h1>
+    <div class="alert alert-danger" v-if="error.tipo !== null">
+        {{error.message}}
+    </div>
     <form @submit.prevent="submit()">
-        <input v-model.trim="email" class="form-control my-2" type="email" placeholder="Email">
-        <input v-model.trim="pass" class="form-control my-2" type="password" placeholder="Contraseña">
+        <input v-model.trim="email" :class="[error.tipo === 'email' ? 'is-invalid' : '']" class="form-control my-2" type="email" placeholder="Email">
+        <input v-model.trim="pass" :class="[error.tipo === 'password' ? 'is-invalid' : '']" class="form-control my-2" type="password" placeholder="Contraseña">
         <input v-model.trim="pass2" v-show="!login" class="form-control my-2" type="password" placeholder="Repetir Contraseña">
         <button :disabled="diableButton" class="btn btn-primary" type="submit">{{nombreBoton}}</button>
     </form>
 </template>
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 export default {
 
     props:{
@@ -31,7 +34,8 @@ export default {
         diableButton(){
              return this.login ? (!this.isEmailValid() || !this.isValidString(this.pass,6)) : 
                  (!this.isEmailValid() || !this.isValidString(this.pass,6) || this.pass2.trim() !=  this.pass.trim())
-        }
+        },
+        ...mapState(['error'])
     },
     methods: {
         ...mapActions(['registrarUsuario','loginUsuario']),
@@ -42,11 +46,14 @@ export default {
         isValidString(text,minValue){
             return text.trim().length >= minValue 
         },
-        submit(){
+        async submit(){
             if(this.login){
-                this.loginUsuario({email: this.email, password: this.pass})
+                await this.loginUsuario({email: this.email, password: this.pass})
             }else{
-                this.registrarUsuario({email: this.email, password: this.pass}) 
+                await this.registrarUsuario({email: this.email, password: this.pass}) 
+            }
+            if(this.error.tipo !== null ){
+                return
             }
             this.email= ''
             this.pass= ''

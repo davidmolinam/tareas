@@ -11,14 +11,12 @@ export default createStore({
             responsable: '',
             tiempo: 0
         },
-        user: null
+        user: null,
+        error: {tipo: null, message: null}
     },
     mutations: {
         setUser(state, payload) {
             state.user = payload
-        },
-        set(state, payload) {
-            state.tareas.push(payload)
         },
         tarea(state, payload) {
             if (!state.tareas.find(f => f.id === payload)) {
@@ -27,8 +25,40 @@ export default createStore({
             }
             state.tarea = state.tareas.find(f => f.id === payload)
         },
-        cargar(state, payload) {
-            state.tareas = payload
+        async recuperarDatos(state){
+            try {
+                const res = await fetch(`https://tareas-sin-auth-default-rtdb.europe-west1.firebasedatabase.app/tareas.json?auth=${state.user.idToken}`)
+                const resultData = await res.json()
+                const arrayTareas = []
+                let showActions= false
+                for (let userId in resultData) {
+                    showActions = userId === state.user.localId
+                    for (let tarea in resultData[userId]) {
+                        const newTarea = resultData[userId][tarea]
+                        newTarea.showActions=showActions
+                        arrayTareas.push(newTarea)
+                    }
+                }
+                state.tareas = arrayTareas
+            } catch (err) {
+                console.error(err)
+            }
+
+        },
+        setError(state,payload){
+            if(payload === null){
+                return state.error = {tipo: null, message: null}
+            }
+            if(payload.message === 'EMAIL_NOT_FOUND'){
+                return state.error = {tipo: 'email', message: "El usuario no existe"}
+            }
+            if(payload.message === 'INVALID_PASSWORD'){
+                return state.error = {tipo: 'password', message: "Contraseña incorrecta"}
+            }
+            if(payload.message === 'EMAIL_EXISTS'){
+                return state.error = {tipo: 'email', message: "El usuario ya está registrado"}
+            }
+
         }
     },
     actions: {
@@ -44,19 +74,7 @@ export default createStore({
             } else {
                 return commit('setUser', null)
             }
-            try {
-                const res = await fetch(`https://tareas-sin-auth-default-rtdb.europe-west1.firebasedatabase.app/tareas.json?auth=${state.user.idToken}`)
-                const resultData = await res.json()
-                const arrayTareas = []
-                for (let userId in resultData) {
-                    for (let tarea in resultData[userId]) {
-                        arrayTareas.push(resultData[userId][tarea])
-                    }
-                }
-                commit('cargar', arrayTareas)
-            } catch (err) {
-                console.error(err)
-            }
+            commit('recuperarDatos')
         },
         async setTareas({ commit, state }, tarea) {
             try {
@@ -65,7 +83,7 @@ export default createStore({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(tarea)
                 })
-                commit('set', tarea)
+                commit('recuperarDatos')
             } catch (err) {
                 console.error(err)
             }
@@ -77,15 +95,7 @@ export default createStore({
                     method: 'DELETE'
                 })
 
-                const res = await fetch(`https://tareas-sin-auth-default-rtdb.europe-west1.firebasedatabase.app/tareas.json?auth=${state.user.idToken}`)
-                const resultData = await res.json()
-                const arrayTareas = []
-                for (let userId in resultData) {
-                    for (let tarea in resultData[userId]) {
-                        arrayTareas.push(resultData[userId][tarea])
-                    }
-                }
-                commit('cargar', arrayTareas)
+                commit('recuperarDatos')
 
             } catch (err) {
                 console.error(err)
@@ -124,10 +134,10 @@ export default createStore({
 
                 const userDB = await res.json()
                 if (userDB.error) {
-                    console.log(userDB.error)
-                    return
+                    return commit('setError',userDB.error)
                 }
                 commit('setUser', userDB)
+                commit('setError',null)
                 localStorage.setItem('usuario', JSON.stringify(userDB))
                 router.push("/")
             } catch (error) {
@@ -148,10 +158,10 @@ export default createStore({
                 })
                 const userDB = await res.json()
                 if (userDB.error) {
-                    console.log(userDB.error)
-                    return
+                    return commit('setError',userDB.error)
                 }
                 commit('setUser', userDB)
+                commit('setError',null)
                 localStorage.setItem('usuario', JSON.stringify(userDB))
                 router.push("/")
             } catch (error) {

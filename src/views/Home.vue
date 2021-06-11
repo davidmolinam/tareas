@@ -8,7 +8,7 @@
 import FormTareas from '../components/FormTareas'
 import ListaTareas from '../components/ListaTareas'
 import {mapActions} from 'vuex'
-
+const shortid = require('shortid');
 
 export default {
   name: 'Home',
@@ -29,10 +29,10 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['setTareas']),
+    ...mapActions(['setTareas','cargarLocalStorage']),
     procesarTarea(){
+      this.tarea.id = shortid.generate()
       this.setTareas(this.tarea)
-      console.log(this.tarea)
       this.tarea={
         id:'',
         texto: '',
@@ -42,5 +42,8 @@ export default {
       }
     }
   },
+  created(){
+      this.cargarLocalStorage()
+    }
 }
 </script>

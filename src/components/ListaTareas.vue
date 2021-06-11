@@ -15,12 +15,23 @@
         <tr v-for="item in tareas" :key="item.id">
           <th scope="row">{{item.id}}</th>
           <td>{{item.texto}}</td>
-          <td>{{item.categorias.join(', ')}}</td>       
+          <td>
+            <span v-for="(cat, index) in item.categorias" :key="index">
+              {{ (item.categorias.length === index + 1) ? cat : cat + ', ' }}
+            </span>
+          </td>
           <td>{{item.responsable}}</td>
           <td>{{item.tiempo}}</td>
           <td>
-              <button class="btn btn-danger btn-sm" @click="borrarTarea(item.texto)">Eliminar</button>
-              <button class="btn btn-info btn-sm">Editar</button>
+              <button class="btn btn-danger btn-sm" @click="borrar(item.id)">Eliminar</button>
+              <router-link 
+                class="btn btn-warning ml-5 btn-sm" 
+                :to="{
+                    name: 'Editar',
+                    params: {
+                      id: item.id
+                    }
+              }">Editar</router-link>
           </td>
         </tr>
       </tbody>
@@ -34,7 +45,10 @@ export default {
         ...mapState(['tareas'])
     },
     methods: {
-        ...mapActions(['borrarTarea'])
+        ...mapActions(['borrarTarea','cargarLocalStorage']),
+        borrar(id){
+          this.borrarTarea(id);
+        }
     },
     
 }
